@@ -1,0 +1,93 @@
+## Macro title: spacelist
+## Macro has a body: N
+## Body processing: no main macro body
+## Output: Space List with logo
+
+## Developed by: Murdoc Bates
+## Date created: 2018-08-23
+## Installed by: 
+
+## @param Label:title=Space Kategorie|type=string|required=false|desc=Optional eine Kategorie zum filtern.
+
+## try to get space category
+#set ( $spaceLabel = $action.labelManager.getLabel( "team:${paramLabel}" ) )
+
+## BaseURL
+#set( $urlPrefix = "$req.getScheme()://$req.getServerName()$req.contextPath" )
+
+## check if space category exists
+#if ( $!spaceLabel )
+    ## try to get spaces by category
+    #set ( $spaces = $action.labelManager.getSpacesWithLabel( $spaceLabel ) )
+#else
+    #set ( $spaces = $spaceManager.getAllSpaces() )
+#end
+
+<style type="text/css">
+    .spaceTable {
+        background-color: #FFFFFF;
+        border-collapse: collapse;
+        color: #000;
+        font-size: 14px;
+        width: 100%
+    }
+
+    .spaceTable td,
+    .spaceTable th {
+        width: auto;
+        padding: 5px;
+        border: 0;
+        border-bottom: 1px solid #A4A4A4;
+        background-color: #FFFFFF
+    }
+
+    .spaceTable td {
+        vertical-align: middle
+    }
+    #header {
+        background-color: #FFFFFF
+    }
+</style>
+<table class="spaceTable">
+    <tr>
+        <th id="header" colspan="2">
+            Bereich
+        </th>
+        <th id="header">
+            Beschreibung
+        </th>
+        <th id="header">
+            Kategorien
+        </th>
+    </tr>
+    #foreach ( $space in $spaces )
+        ## check if current user can view space
+        #if ( $permissionHelper.canView( $action.remoteUser, $space ) )
+            #set( $spaceLogo=$spaceManager.getLogoForSpace( $space.key ) )
+            #set( $spaceDescription = $space.getDescription() )
+            #set( $containerManagerClass=$content.class.forName( "com.atlassian.spring.container.ContainerManager" ) )
+            #set( $getInstanceMethod=$containerManagerClass.getDeclaredMethod( "getInstance",null ) )
+            #set( $containerManager=$getInstanceMethod.invoke( null,null ) )
+            #set( $containerContext=$containerManager.containerContext )
+            #set( $spaceLabelManager=$containerContext.getComponent( "spaceLabelManager" ) )
+            <tr>
+                <td cellpadding="0" style="margin-right: 0px; padding-right: 0px">
+                    <a href="$!space.urlPath">
+                        <img src="$spaceLogo.getDownloadPath()" title="$!space.name" alt="$!space.name" width="32" height="32"></a>
+                </td>
+                <td style="margin-left: 0px; padding-left: 0px">
+                    <a href="$!space.urlPath">$!space.name</a>
+                </td>
+                </td>
+                <td cellpadding="15">
+                    $spaceDescription.getBodyAsString()
+                </td>
+                <td cellpadding="15">
+                    #foreach ( $label in $spaceLabelManager.getTeamLabelsOnSpace( $space.key ) )
+                        <div class="aui-label space-label"><a href="$!urlPrefix/spacedirectory/view.action?selectedSpaceCategory=$label.getName()">$label.getName()</a></div>
+                    #end
+                    </td>
+            </tr>
+            #end
+        #end
+</table>
