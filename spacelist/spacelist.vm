@@ -51,13 +51,13 @@
 <table class="spaceTable">
     <tr>
         <th id="header" colspan="2">
-            Bereich
+            $i18n.getText("space.name")
         </th>
         <th id="header">
-            Beschreibung
+            $i18n.getText("description.name")
         </th>
         <th id="header">
-            Kategorien
+            $i18n.getText("categories.name")
         </th>
     </tr>
     #foreach ( $space in $spaces )
